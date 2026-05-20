@@ -1587,8 +1587,44 @@
       const AGE_ORDER = ['Under 18', '18 - 20', '21 - 23', '24 - 26'];
       const LIKERT = ['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree'];
       const FILTER_ALL = '__all__';
-      let activeRows = INITIAL_SURVEY_ROWS.map(normalizeRow);
-      let sourceName = 'Initial survey data';
+      const SAVED_DATA_KEY = 'ebtUploadedSurveyRowsV1';
+      const INITIAL_SOURCE_NAME = 'Initial survey data';
+
+      function loadSavedDataset() {
+        try {
+          const raw = localStorage.getItem(SAVED_DATA_KEY);
+          if (!raw) return null;
+          const payload = JSON.parse(raw);
+          const rows = Array.isArray(payload?.rows) ? payload.rows.map(normalizeRow) : [];
+          if (!rows.some(row => row.consent.toLowerCase() === 'yes')) throw new Error('Saved survey data is invalid.');
+          return { rows, sourceName: clean(payload.sourceName) || 'Uploaded survey data' };
+        } catch (error) {
+          try { localStorage.removeItem(SAVED_DATA_KEY); } catch (_) {}
+          return null;
+        }
+      }
+
+      function saveDataset(rows, name) {
+        try {
+          localStorage.setItem(SAVED_DATA_KEY, JSON.stringify({
+            version: 1,
+            sourceName: clean(name) || 'Uploaded survey data',
+            savedAt: new Date().toISOString(),
+            rows,
+          }));
+          return true;
+        } catch (error) {
+          return false;
+        }
+      }
+
+      function clearSavedDataset() {
+        try { localStorage.removeItem(SAVED_DATA_KEY); } catch (_) {}
+      }
+
+      const savedDataset = loadSavedDataset();
+      let activeRows = savedDataset?.rows || INITIAL_SURVEY_ROWS.map(normalizeRow);
+      let sourceName = savedDataset?.sourceName || INITIAL_SOURCE_NAME;
 
       const filterBar = document.querySelector('.filter-bar');
       filterBar.innerHTML = `
@@ -2031,8 +2067,10 @@
             if (!parsed.some(row => row.consent.toLowerCase() === 'yes')) throw new Error('No consented responses found.');
             activeRows = parsed;
             sourceName = file.name;
+            const saved = saveDataset(parsed, file.name);
             renderFilters();
             renderDashboard();
+            if (!saved) updateStatus(currentRows(), 'Uploaded data loaded, but could not be saved in this browser.');
           } catch (error) {
             updateStatus(currentRows(), error.message || 'Could not read this survey file.');
           } finally {
@@ -2048,7 +2086,8 @@
       els.upload.addEventListener('change', event => loadUploadedFile(event.target.files[0]));
       els.reset.addEventListener('click', () => {
         activeRows = INITIAL_SURVEY_ROWS.map(normalizeRow);
-        sourceName = 'Initial survey data';
+        sourceName = INITIAL_SOURCE_NAME;
+        clearSavedDataset();
         renderFilters();
         renderDashboard();
       });
@@ -2090,6 +2129,7 @@
             read: 'Could not read this file.',
             structure: 'Excel structure does not match the survey export.',
             generic: 'Could not read this survey file.',
+            persist: 'Uploaded data loaded, but could not be saved in this browser.',
           },
           sections: {
             awareness: 'Awareness',
@@ -2157,7 +2197,7 @@
               languageTitle: 'Language toggle',
               languageBody: 'Switch between English and Indonesia. The dashboard labels and this product tour update immediately.',
               uploadTitle: 'Upload survey data',
-              uploadBody: 'Upload an Excel or CSV survey export. The dashboard processes the file in your browser and keeps the previous view if the file is invalid.',
+              uploadBody: 'Upload an Excel or CSV survey export. The dashboard processes and remembers the latest valid file in this browser, while keeping the previous view if the file is invalid.',
               ageFilterTitle: 'Age filter',
               ageFilterBody: 'Use this dropdown to compare employer brand metrics across age bands. All charts and KPIs refresh to the selected segment.',
               universityFilterTitle: 'University filter',
@@ -2234,6 +2274,7 @@
             read: 'File ini tidak dapat dibaca.',
             structure: 'Struktur Excel tidak sesuai dengan export survei.',
             generic: 'File survei ini tidak dapat dibaca.',
+            persist: 'Data upload berhasil dimuat, tetapi tidak dapat disimpan di browser ini.',
           },
           sections: {
             awareness: 'Kesadaran',
@@ -2301,7 +2342,7 @@
               languageTitle: 'Pengubah bahasa',
               languageBody: 'Ganti antara English dan Indonesia. Label dashboard dan tur produk ini akan langsung mengikuti bahasa aktif.',
               uploadTitle: 'Unggah data survei',
-              uploadBody: 'Unggah export survei Excel atau CSV. Dashboard memproses file di browser dan mempertahankan tampilan terakhir jika file tidak valid.',
+              uploadBody: 'Unggah export survei Excel atau CSV. Dashboard memproses dan mengingat file valid terbaru di browser ini, serta mempertahankan tampilan terakhir jika file tidak valid.',
               ageFilterTitle: 'Filter usia',
               ageFilterBody: 'Gunakan dropdown ini untuk membandingkan metrik employer brand antar kelompok usia. Semua chart dan KPI mengikuti segmen yang dipilih.',
               universityFilterTitle: 'Filter universitas',
