@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=1920, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Employer Branding Tracker Dashboard</title>
   <style>
     @font-face {
@@ -150,11 +150,46 @@
     }
 
     .filter-bar {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 10px 28px 14px;
+      display: grid;
+      grid-template-columns: auto auto minmax(420px, 1fr) minmax(260px, auto);
+      align-items: flex-end;
+      column-gap: 18px;
+      padding: 10px 28px 12px;
       border-top: 1px solid var(--fwd-grey-50);
+      border-bottom: 1px solid var(--fwd-grey-50);
+      background: linear-gradient(180deg, var(--fwd-white) 0%, #FCFDFD 100%);
+    }
+
+    .toolbar-group {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .toolbar-divider {
+      width: 1px;
+      height: 34px;
+      align-self: flex-end;
+      background: var(--fwd-grey);
+    }
+
+    .action-group {
+      justify-self: start;
+    }
+
+    .filter-group {
+      justify-self: stretch;
+      justify-content: center;
+      padding-left: 2px;
+    }
+
+    .filter-item {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      min-height: 46px;
+      min-width: 0;
     }
 
     .filter-bar label {
@@ -164,7 +199,8 @@
       letter-spacing: 0.05em;
       color: var(--fwd-green-50);
       display: block;
-      margin-bottom: 3px;
+      line-height: 1.1;
+      margin-bottom: 5px;
     }
 
     .filter-item select {
@@ -175,8 +211,11 @@
       background: var(--fwd-grey-20);
       border: 1px solid var(--fwd-grey);
       border-radius: 6px;
+      height: 30px;
       padding: 6px 28px 6px 10px;
       min-width: 140px;
+      width: 160px;
+      max-width: 100%;
       cursor: pointer;
       appearance: none;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23183028'/%3E%3C/svg%3E");
@@ -192,10 +231,18 @@
     }
 
     .upload-control {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      min-width: 280px;
+      display: grid;
+      grid-template-columns: auto auto auto;
+      align-items: end;
+      column-gap: 8px;
+      row-gap: 5px;
+      min-width: 0;
+      flex: 0 1 auto;
+    }
+
+    .upload-control > label:first-child {
+      grid-column: 1 / -1;
+      margin-bottom: 0;
     }
 
     .upload-button,
@@ -203,20 +250,41 @@
       font-family: inherit;
       font-size: 12px;
       font-weight: 700;
-      color: var(--fwd-white);
-      background: var(--fwd-orange);
-      border: 1px solid var(--fwd-orange);
+      color: var(--fwd-dark-green);
+      background: var(--fwd-white);
+      border: 1px solid var(--fwd-grey);
       border-radius: 6px;
-      padding: 7px 10px;
+      height: 30px;
+      padding: 0 10px;
       cursor: pointer;
       line-height: 1;
       white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .reset-button {
       color: var(--fwd-dark-green);
       background: var(--fwd-white);
       border-color: var(--fwd-grey);
+    }
+
+    .filter-bar .upload-button {
+      color: var(--fwd-orange);
+      background: var(--fwd-orange-20);
+      border-color: var(--fwd-orange-50);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      letter-spacing: 0;
+      line-height: 1;
+      margin-bottom: 0;
+      text-align: center;
+    }
+
+    #university-filter {
+      width: clamp(220px, 24vw, 360px);
     }
 
     .upload-control input {
@@ -229,7 +297,8 @@
     }
 
     .filter-status {
-      margin-left: auto;
+      justify-self: end;
+      margin-left: 0;
       font-size: 10.5px;
       line-height: 1.3;
       color: #53615D;
@@ -242,6 +311,126 @@
       font-weight: 700;
     }
 
+    .lang-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      padding: 2px;
+      background: var(--fwd-grey-20);
+      border: 1px solid var(--fwd-grey);
+      border-radius: 5px;
+    }
+
+    .lang-toggle button,
+    .tour-button {
+      font-family: inherit;
+      font-size: 10.5px;
+      font-weight: 800;
+      color: var(--fwd-dark-green);
+      background: transparent;
+      border: 0;
+      border-radius: 4px;
+      padding: 4px 7px;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .lang-toggle button.active {
+      color: var(--fwd-white);
+      background: var(--fwd-orange);
+    }
+
+    .tour-button {
+      font-size: 12px;
+      color: var(--fwd-dark-green);
+      background: var(--fwd-white);
+      border: 1px solid var(--fwd-yellow-50);
+      height: 30px;
+      padding: 0 10px;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tour-spotlight {
+      position: fixed;
+      z-index: 9998;
+      border: 3px solid var(--fwd-orange);
+      border-radius: 10px;
+      box-shadow: 0 0 0 9999px rgba(24, 48, 40, 0.58), 0 8px 22px rgba(24, 48, 40, 0.22);
+      pointer-events: none;
+      transition: top 180ms ease, left 180ms ease, width 180ms ease, height 180ms ease;
+    }
+
+    .tour-tooltip {
+      position: fixed;
+      z-index: 9999;
+      width: 340px;
+      max-width: calc(100vw - 32px);
+      background: var(--fwd-white);
+      border: 1px solid var(--fwd-grey);
+      border-top: 4px solid var(--fwd-orange);
+      border-radius: 8px;
+      box-shadow: 0 14px 38px rgba(24, 48, 40, 0.22);
+      padding: 14px;
+      color: var(--fwd-dark-green);
+      transition: top 180ms ease, left 180ms ease;
+    }
+
+    .tour-progress {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--fwd-orange);
+      margin-bottom: 6px;
+    }
+
+    .tour-title {
+      font-size: 16px;
+      font-weight: 800;
+      line-height: 1.25;
+      margin-bottom: 6px;
+    }
+
+    .tour-body {
+      font-size: 12px;
+      line-height: 1.45;
+      color: #53615D;
+      margin-bottom: 12px;
+    }
+
+    .tour-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .tour-actions button {
+      font-family: inherit;
+      font-size: 11.5px;
+      font-weight: 800;
+      border-radius: 5px;
+      padding: 7px 10px;
+      cursor: pointer;
+      border: 1px solid var(--fwd-grey);
+      background: var(--fwd-white);
+      color: var(--fwd-dark-green);
+    }
+
+    .tour-actions .tour-primary {
+      color: var(--fwd-white);
+      border-color: var(--fwd-orange);
+      background: var(--fwd-orange);
+    }
+
+    .tour-actions .tour-skip {
+      color: #53615D;
+      margin-right: auto;
+    }
+
     /* Main grid */
     .main-grid {
       flex: 1;
@@ -249,7 +438,7 @@
       grid-template-columns: repeat(3, 1fr);
       grid-template-rows: repeat(2, 1fr);
       gap: 12px;
-      padding: 12px 14px 14px;
+      padding: 28px 14px 14px;
       min-height: 0;
     }
 
@@ -509,6 +698,204 @@
       .dashboard {
         transform: scale(calc(100vw / 1920));
         margin-bottom: calc(-1080px * (1 - 100vw / 1920));
+      }
+    }
+
+    @media (max-width: 900px) {
+      body {
+        padding: 0;
+        display: block;
+        overflow-x: hidden;
+      }
+
+      .dashboard {
+        width: 100%;
+        height: auto;
+        min-height: 100vh;
+        transform: none;
+        margin-bottom: 0;
+        overflow: visible;
+      }
+
+      .header-area {
+        height: auto;
+      }
+
+      .header-top {
+        min-height: 0;
+        padding: 16px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .header-left h1 {
+        font-size: 23px;
+        line-height: 1.15;
+        overflow-wrap: anywhere;
+      }
+
+      .header-left {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .header-left .subtitle {
+        max-width: none;
+        font-size: 12px;
+        overflow-wrap: anywhere;
+      }
+
+      .header-right {
+        width: 100%;
+        align-items: flex-start;
+      }
+
+      .logo-wrap {
+        width: 126px;
+        height: 56px;
+      }
+
+      .fwd-logo-img {
+        width: 124px;
+      }
+
+      .header-meta {
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .filter-bar {
+        grid-template-columns: 1fr;
+        padding: 12px 16px;
+        align-items: stretch;
+        gap: 12px;
+      }
+
+      .toolbar-group {
+        width: 100%;
+        flex-wrap: wrap;
+      }
+
+      .toolbar-divider {
+        display: none;
+      }
+
+      .filter-group {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding-left: 0;
+      }
+
+      .filter-item,
+      .upload-control {
+        width: 100%;
+      }
+
+      .upload-control {
+        align-items: flex-end;
+      }
+
+      .filter-item select {
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+      }
+
+      #university-filter {
+        width: 100%;
+      }
+
+      .filter-status {
+        justify-self: start;
+        width: 100%;
+        max-width: none;
+        margin-left: 0;
+        text-align: left;
+      }
+
+      .main-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: none;
+        height: auto;
+        padding: 22px 12px 12px;
+        gap: 14px;
+      }
+
+      .section-card {
+        min-height: 520px;
+        overflow: visible;
+      }
+
+      .section-body {
+        min-height: 0;
+      }
+
+      .charts-row,
+      .advocacy-top,
+      .advocacy-bottom {
+        flex-direction: column;
+      }
+
+      .chart-block,
+      .chart-block[style],
+      .advocacy-kpis,
+      .barrier-kpi-wrap {
+        width: 100% !important;
+        max-width: none !important;
+        flex: none !important;
+      }
+
+      .chart-canvas-wrap,
+      #advocacy .advocacy-top .chart-canvas-wrap,
+      #advocacy .advocacy-bottom .chart-canvas-wrap {
+        min-height: 230px;
+      }
+
+      .advocacy-kpis,
+      .kpi-row {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+
+      .kpi-card.compact,
+      .advocacy-kpis .kpi-card,
+      .barrier-kpi-wrap .kpi-card {
+        min-width: 150px;
+        max-width: none;
+        flex: 1 1 150px;
+      }
+
+      .tour-tooltip {
+        width: min(340px, calc(100vw - 24px));
+      }
+    }
+
+    @media (max-width: 480px) {
+      .header-left h1 {
+        font-size: 20px;
+      }
+
+      .filter-bar {
+        padding: 10px 12px;
+      }
+
+      .main-grid {
+        padding: 20px 10px 10px;
+      }
+
+      .section-card {
+        padding: 10px;
+      }
+
+      .chart-canvas-wrap,
+      #advocacy .advocacy-top .chart-canvas-wrap,
+      #advocacy .advocacy-bottom .chart-canvas-wrap {
+        min-height: 210px;
       }
     }
   </style>
@@ -1205,19 +1592,24 @@
 
       const filterBar = document.querySelector('.filter-bar');
       filterBar.innerHTML = `
-        <div class="filter-item upload-control">
-          <label for="excel-upload">Excel Survey</label>
-          <label class="upload-button" for="excel-upload">Upload .xlsx</label>
-          <input id="excel-upload" type="file" accept=".xlsx,.xls,.csv" />
-          <button class="reset-button" id="reset-data" type="button">Reset</button>
+        <div class="toolbar-group action-group">
+          <div class="filter-item upload-control">
+            <label for="excel-upload">Excel Survey</label>
+            <label class="upload-button" for="excel-upload">Upload .xlsx</label>
+            <input id="excel-upload" type="file" accept=".xlsx,.xls,.csv" />
+            <button class="reset-button" id="reset-data" type="button">Reset</button>
+          </div>
         </div>
-        <div class="filter-item">
-          <label for="age-filter">Age</label>
-          <select id="age-filter"></select>
-        </div>
-        <div class="filter-item">
-          <label for="university-filter">University</label>
-          <select id="university-filter"></select>
+        <div class="toolbar-divider" aria-hidden="true"></div>
+        <div class="toolbar-group filter-group">
+          <div class="filter-item">
+            <label for="age-filter">Age</label>
+            <select id="age-filter"></select>
+          </div>
+          <div class="filter-item">
+            <label for="university-filter">University</label>
+            <select id="university-filter"></select>
+          </div>
         </div>
         <span class="filter-status" id="data-status"></span>
       `;
@@ -1663,6 +2055,623 @@
 
       renderFilters();
       renderDashboard();
+    })();
+  </script>
+  <script>
+    (() => {
+      const LANG_KEY = 'ebtLang';
+      const TOUR_KEY = 'ebtProductTourDone';
+      let currentLang = localStorage.getItem(LANG_KEY) || 'en';
+      let activeTourIndex = -1;
+      let isApplyingLanguage = false;
+      let observerTimer = null;
+
+      const I18N = {
+        en: {
+          subtitle: 'Survey-based view of employer awareness, familiarity, perception, consideration, advocacy, barriers',
+          surveyLabel: 'Employer Branding Survey',
+          liveData: 'Live survey data',
+          uploadLabel: 'Excel Survey',
+          uploadButton: 'Upload .xlsx',
+          resetButton: 'Reset',
+          ageLabel: 'Age',
+          universityLabel: 'University',
+          allAges: 'All ages',
+          allUniversities: 'All universities',
+          productTour: 'Product Tour',
+          respondents: (shown, total) => `Respondents: ${shown} shown / ${total} valid`,
+          status: (source, count) => `${source} | ${count} valid respondents shown`,
+          currentView: count => `${count} valid respondents in current view`,
+          sourceInitial: 'Initial survey data',
+          errors: {
+            fileType: 'Please upload an Excel or CSV survey export.',
+            parser: 'Excel parser failed to load. Check the SheetJS CDN connection.',
+            noConsent: 'No consented responses found.',
+            read: 'Could not read this file.',
+            structure: 'Excel structure does not match the survey export.',
+            generic: 'Could not read this survey file.',
+          },
+          sections: {
+            awareness: 'Awareness',
+            familiarity: 'Familiarity',
+            perception: 'Perception',
+            consideration: 'Consideration',
+            advocacy: 'Advocacy',
+            barrier: 'Barrier',
+          },
+          kpi: {
+            fwdAwareness: 'FWD Awareness Rate',
+            engagement: 'Engagement Rate',
+            advocacy: 'Advocacy Rate',
+            noBarrier: 'No Barrier Rate',
+          },
+          chartTitles: {
+            awarenessRank: 'Employer Awareness Ranking',
+            awarenessChannel: 'Awareness Channel Distribution',
+            familiaritySplit: 'Familiarity Split',
+            familiarityAspects: 'Top Aspects on Familiarity',
+            perceptionDist: 'Overall Perception Distribution',
+            competitiveness: 'Competitiveness vs Industry',
+            consideration: 'Consideration Likelihood',
+            careerInterest: 'Career Interest',
+            engagement: 'Engagement Types',
+            credibility: 'Message Credibility',
+            recommend: 'Recommendation Intent',
+            barriers: 'Top Barriers',
+            drivers: 'Top Interest Drivers',
+          },
+          chartSubs: {
+            awarenessRank: '% of respondents aware of each employer',
+            awarenessChannel: '% of selections by channel',
+            familiaritySplit: 'Insurance vs Workplace familiarity',
+            familiarityAspects: 'Top 5 aspects; remainder grouped as Others',
+            perception: pct => `Aggregated 1-5 scale | Positive = Agree + Strongly agree (${pct}%)`,
+            competitiveness: 'How FWD rates compared with other insurance employers',
+            consideration: pct => `Positive consideration = Likely + Very likely (${pct}% current view)`,
+            careerInterest: 'Would you like to learn more about careers at FWD?',
+            credibility: (pct, avg) => `Positive = Credible + Very credible (${pct}%) | Avg: ${avg}`,
+            barriers: label => `Top barriers | Most selected: ${label}`,
+            drivers: 'What can increase application interest?',
+          },
+          annotations: {
+            perception: pct => `Positive perception: ${pct}% across 5 statements`,
+            competitiveness: avg => `Avg. competitiveness index: ${avg}`,
+          },
+          insights: {
+            awareness: 'Awareness shows how visible FWD is compared with other insurance employers and which channels drive employer visibility.',
+            familiarity: 'Familiarity reveals whether respondents know FWD mainly through products, workplace reputation, or specific employer attributes.',
+            perception: 'Perception combines overall employer impression and relative competitiveness against other insurance employers.',
+            consideration: 'Consideration shows whether employer awareness and perception translate into future job interest.',
+            advocacy: 'Advocacy reflects interaction depth, message credibility, and willingness to recommend FWD as an employer.',
+            barrier: 'Barrier analysis identifies what prevents application intent and what communication can increase career interest.',
+          },
+          tour: {
+            progress: (step, total) => `Step ${step} of ${total}`,
+            back: 'Back',
+            next: 'Next',
+            skip: 'Skip',
+            finish: 'Finish',
+            steps: {
+              headerTitle: 'Dashboard overview',
+              headerBody: 'This header shows the active respondent count, data status, confidentiality badge, and language controls.',
+              languageTitle: 'Language toggle',
+              languageBody: 'Switch between English and Indonesia. The dashboard labels and this product tour update immediately.',
+              uploadTitle: 'Upload survey data',
+              uploadBody: 'Upload an Excel or CSV survey export. The dashboard processes the file in your browser and keeps the previous view if the file is invalid.',
+              ageFilterTitle: 'Age filter',
+              ageFilterBody: 'Use this dropdown to compare employer brand metrics across age bands. All charts and KPIs refresh to the selected segment.',
+              universityFilterTitle: 'University filter',
+              universityFilterBody: 'Use this dropdown to isolate one university after the dashboard cleans duplicate wording and spelling variants.',
+              awarenessTitle: 'Awareness',
+              awarenessBody: 'This section compares FWD employer awareness with other insurance employers and shows the channels that drive awareness.',
+              fwdKpiTitle: 'FWD Awareness KPI',
+              fwdKpiBody: 'This KPI is the percentage of valid respondents who selected FWD in the employer awareness question.',
+              awarenessRankTitle: 'Employer awareness ranking',
+              awarenessRankBody: 'This chart ranks each employer by awareness. Use it to see FWD position versus Prudential, Allianz, AIA, and other competitors.',
+              awarenessChannelTitle: 'Awareness channel distribution',
+              awarenessChannelBody: 'This donut shows where respondents heard about FWD. It helps stakeholders decide which channels deserve more activation.',
+              familiarityTitle: 'Familiarity',
+              familiarityBody: 'Use this area to see whether respondents know FWD more as an insurance brand, workplace, or by specific employer attributes.',
+              familiaritySplitTitle: 'Familiarity split',
+              familiaritySplitBody: 'This chart separates insurance familiarity from workplace familiarity, showing whether FWD is known more as a product brand or employer.',
+              familiarityAspectsTitle: 'Top familiarity aspects',
+              familiarityAspectsBody: 'This bar chart shows the strongest associations with FWD. Low employer-related aspects can become content priorities.',
+              perceptionTitle: 'Perception',
+              perceptionBody: 'This section summarizes five perception statements and the competitiveness rating against the industry.',
+              perceptionDistTitle: 'Overall perception distribution',
+              perceptionDistBody: 'This stacked bar combines the five Likert statements. Focus on the positive share and the neutral share to identify conversion potential.',
+              competitivenessTitle: 'Competitiveness vs industry',
+              competitivenessBody: 'This chart compares how FWD is perceived against other insurance employers. Movement toward Much better signals stronger differentiation.',
+              considerationTitle: 'Consideration',
+              considerationBody: 'Consideration shows whether awareness and perception are translating into future job interest.',
+              considerationChartTitle: 'Consideration likelihood',
+              considerationChartBody: 'This chart measures whether respondents would consider FWD as an employer. Likely plus Very likely is the key positive signal.',
+              careerInterestTitle: 'Career interest',
+              careerInterestBody: 'This chart shows whether respondents want to learn more about careers at FWD, a practical signal for talent marketing follow-up.',
+              advocacyTitle: 'Advocacy',
+              advocacyBody: 'Advocacy covers respondent interaction depth, message credibility, and willingness to recommend FWD as an employer.',
+              engagementKpiTitle: 'Engagement KPI',
+              engagementKpiBody: 'This KPI measures respondents with any meaningful interaction with FWD, such as applying, following content, or events.',
+              advocacyKpiTitle: 'Advocacy KPI',
+              advocacyKpiBody: 'This KPI measures respondents likely to recommend FWD as an employer. It is useful for ambassador and referral planning.',
+              engagementChartTitle: 'Engagement types',
+              engagementChartBody: 'This chart breaks down how respondents interacted with FWD. It reveals whether engagement is passive, content-led, or application-led.',
+              credibilityChartTitle: 'Message credibility',
+              credibilityChartBody: 'This chart shows how credible respondents find FWD employer messages. Low credibility means proof points and employee voices may be needed.',
+              recommendChartTitle: 'Recommendation intent',
+              recommendChartBody: 'This chart shows whether respondents would recommend FWD as an employer, indicating potential organic advocacy.',
+              barrierTitle: 'Barrier',
+              barrierBody: 'This section highlights what prevents application intent and what content could increase interest.',
+              noBarrierKpiTitle: 'No barrier KPI',
+              noBarrierKpiBody: 'This KPI is the share of respondents without a stated barrier. A higher score means fewer obstacles between interest and application.',
+              barriersChartTitle: 'Top barriers',
+              barriersChartBody: 'This chart identifies why respondents may hesitate to apply. Use the top barriers to prioritize employer brand messaging.',
+              driversChartTitle: 'Top interest drivers',
+              driversChartBody: 'This chart shows what could increase application interest, such as clearer career information, benefits, culture, or learning opportunities.',
+            },
+          },
+        },
+        id: {
+          subtitle: 'Tampilan berbasis survei untuk kesadaran, familiaritas, persepsi, pertimbangan, advokasi, dan hambatan employer brand',
+          surveyLabel: 'Survei Employer Branding',
+          liveData: 'Data survei aktif',
+          uploadLabel: 'Survei Excel',
+          uploadButton: 'Unggah .xlsx',
+          resetButton: 'Reset',
+          ageLabel: 'Usia',
+          universityLabel: 'Universitas',
+          allAges: 'Semua usia',
+          allUniversities: 'Semua universitas',
+          productTour: 'Tur Produk',
+          respondents: (shown, total) => `Responden: ${shown} ditampilkan / ${total} valid`,
+          status: (source, count) => `${source} | ${count} responden valid ditampilkan`,
+          currentView: count => `${count} responden valid pada tampilan ini`,
+          sourceInitial: 'Data survei awal',
+          errors: {
+            fileType: 'Unggah file survei dalam format Excel atau CSV.',
+            parser: 'Parser Excel gagal dimuat. Periksa koneksi CDN SheetJS.',
+            noConsent: 'Tidak ada respons dengan consent yang ditemukan.',
+            read: 'File ini tidak dapat dibaca.',
+            structure: 'Struktur Excel tidak sesuai dengan export survei.',
+            generic: 'File survei ini tidak dapat dibaca.',
+          },
+          sections: {
+            awareness: 'Kesadaran',
+            familiarity: 'Familiaritas',
+            perception: 'Persepsi',
+            consideration: 'Pertimbangan',
+            advocacy: 'Advokasi',
+            barrier: 'Hambatan',
+          },
+          kpi: {
+            fwdAwareness: 'Tingkat Kesadaran FWD',
+            engagement: 'Tingkat Engagement',
+            advocacy: 'Tingkat Advokasi',
+            noBarrier: 'Tingkat Tanpa Hambatan',
+          },
+          chartTitles: {
+            awarenessRank: 'Peringkat Kesadaran Employer',
+            awarenessChannel: 'Distribusi Kanal Awareness',
+            familiaritySplit: 'Pembagian Familiaritas',
+            familiarityAspects: 'Aspek Familiaritas Teratas',
+            perceptionDist: 'Distribusi Persepsi Keseluruhan',
+            competitiveness: 'Daya Saing vs Industri',
+            consideration: 'Kemungkinan Mempertimbangkan',
+            careerInterest: 'Minat Karier',
+            engagement: 'Jenis Engagement',
+            credibility: 'Kredibilitas Pesan',
+            recommend: 'Intensi Rekomendasi',
+            barriers: 'Hambatan Teratas',
+            drivers: 'Pendorong Minat Teratas',
+          },
+          chartSubs: {
+            awarenessRank: '% responden yang mengenal tiap employer',
+            awarenessChannel: '% pilihan berdasarkan kanal',
+            familiaritySplit: 'Familiaritas Insurance vs Workplace',
+            familiarityAspects: '5 aspek teratas; sisanya dikelompokkan sebagai Others',
+            perception: pct => `Agregasi skala 1-5 | Positif = Agree + Strongly agree (${pct}%)`,
+            competitiveness: 'Bagaimana FWD dinilai dibanding employer asuransi lain',
+            consideration: pct => `Pertimbangan positif = Likely + Very likely (${pct}% tampilan ini)`,
+            careerInterest: 'Apakah responden ingin tahu lebih lanjut tentang karier di FWD?',
+            credibility: (pct, avg) => `Positif = Credible + Very credible (${pct}%) | Rata-rata: ${avg}`,
+            barriers: label => `Hambatan teratas | Paling banyak dipilih: ${label}`,
+            drivers: 'Apa yang dapat meningkatkan minat melamar?',
+          },
+          annotations: {
+            perception: pct => `Persepsi positif: ${pct}% dari 5 pernyataan`,
+            competitiveness: avg => `Indeks daya saing rata-rata: ${avg}`,
+          },
+          insights: {
+            awareness: 'Kesadaran menunjukkan seberapa terlihat FWD dibanding employer asuransi lain dan kanal mana yang mendorong visibilitas employer.',
+            familiarity: 'Familiaritas menunjukkan apakah responden mengenal FWD terutama melalui produk, reputasi tempat kerja, atau atribut employer tertentu.',
+            perception: 'Persepsi menggabungkan impresi employer secara umum dan daya saing relatif terhadap employer asuransi lain.',
+            consideration: 'Pertimbangan menunjukkan apakah awareness dan persepsi berubah menjadi minat kerja di masa depan.',
+            advocacy: 'Advokasi mencerminkan kedalaman interaksi, kredibilitas pesan, dan kesediaan merekomendasikan FWD sebagai employer.',
+            barrier: 'Analisis hambatan mengidentifikasi faktor yang menahan minat melamar dan komunikasi yang dapat meningkatkan minat karier.',
+          },
+          tour: {
+            progress: (step, total) => `Langkah ${step} dari ${total}`,
+            back: 'Kembali',
+            next: 'Lanjut',
+            skip: 'Lewati',
+            finish: 'Selesai',
+            steps: {
+              headerTitle: 'Ikhtisar dashboard',
+              headerBody: 'Header menampilkan jumlah responden aktif, status data, badge kerahasiaan, dan kontrol bahasa.',
+              languageTitle: 'Pengubah bahasa',
+              languageBody: 'Ganti antara English dan Indonesia. Label dashboard dan tur produk ini akan langsung mengikuti bahasa aktif.',
+              uploadTitle: 'Unggah data survei',
+              uploadBody: 'Unggah export survei Excel atau CSV. Dashboard memproses file di browser dan mempertahankan tampilan terakhir jika file tidak valid.',
+              ageFilterTitle: 'Filter usia',
+              ageFilterBody: 'Gunakan dropdown ini untuk membandingkan metrik employer brand antar kelompok usia. Semua chart dan KPI mengikuti segmen yang dipilih.',
+              universityFilterTitle: 'Filter universitas',
+              universityFilterBody: 'Gunakan dropdown ini untuk melihat satu universitas setelah dashboard membersihkan variasi penulisan dan duplikasi nama.',
+              awarenessTitle: 'Kesadaran',
+              awarenessBody: 'Bagian ini membandingkan awareness employer FWD dengan employer asuransi lain dan kanal pembentuk awareness.',
+              fwdKpiTitle: 'KPI Awareness FWD',
+              fwdKpiBody: 'KPI ini adalah persentase responden valid yang memilih FWD pada pertanyaan awareness employer.',
+              awarenessRankTitle: 'Peringkat awareness employer',
+              awarenessRankBody: 'Chart ini mengurutkan awareness tiap employer. Gunakan untuk melihat posisi FWD dibanding Prudential, Allianz, AIA, dan kompetitor lain.',
+              awarenessChannelTitle: 'Distribusi kanal awareness',
+              awarenessChannelBody: 'Donut ini menunjukkan dari mana responden mendengar FWD. Ini membantu stakeholder menentukan kanal aktivasi yang perlu diperkuat.',
+              familiarityTitle: 'Familiaritas',
+              familiarityBody: 'Area ini menunjukkan apakah responden mengenal FWD sebagai brand asuransi, tempat kerja, atau melalui atribut employer spesifik.',
+              familiaritySplitTitle: 'Pembagian familiaritas',
+              familiaritySplitBody: 'Chart ini memisahkan familiaritas insurance dan workplace, sehingga terlihat apakah FWD lebih dikenal sebagai brand produk atau employer.',
+              familiarityAspectsTitle: 'Aspek familiaritas teratas',
+              familiarityAspectsBody: 'Chart bar ini menunjukkan asosiasi terkuat terhadap FWD. Aspek employer yang rendah dapat menjadi prioritas konten.',
+              perceptionTitle: 'Persepsi',
+              perceptionBody: 'Bagian ini merangkum lima pernyataan persepsi dan rating daya saing terhadap industri.',
+              perceptionDistTitle: 'Distribusi persepsi keseluruhan',
+              perceptionDistBody: 'Stacked bar ini menggabungkan lima pernyataan Likert. Perhatikan porsi positif dan netral untuk membaca peluang konversi.',
+              competitivenessTitle: 'Daya saing vs industri',
+              competitivenessBody: 'Chart ini membandingkan persepsi FWD dengan employer asuransi lain. Pergeseran ke Much better menandakan diferensiasi yang lebih kuat.',
+              considerationTitle: 'Pertimbangan',
+              considerationBody: 'Pertimbangan menunjukkan apakah awareness dan persepsi berubah menjadi minat kerja di masa depan.',
+              considerationChartTitle: 'Kemungkinan mempertimbangkan',
+              considerationChartBody: 'Chart ini mengukur apakah responden akan mempertimbangkan FWD sebagai employer. Likely plus Very likely adalah sinyal positif utama.',
+              careerInterestTitle: 'Minat karier',
+              careerInterestBody: 'Chart ini menunjukkan apakah responden ingin tahu lebih lanjut tentang karier di FWD, sinyal praktis untuk tindak lanjut talent marketing.',
+              advocacyTitle: 'Advokasi',
+              advocacyBody: 'Advokasi mencakup kedalaman interaksi, kredibilitas pesan, dan kesediaan merekomendasikan FWD sebagai employer.',
+              engagementKpiTitle: 'KPI engagement',
+              engagementKpiBody: 'KPI ini mengukur responden yang pernah punya interaksi bermakna dengan FWD, seperti melamar, mengikuti konten, atau event.',
+              advocacyKpiTitle: 'KPI advokasi',
+              advocacyKpiBody: 'KPI ini mengukur responden yang cenderung merekomendasikan FWD sebagai employer. Ini berguna untuk perencanaan ambassador dan referral.',
+              engagementChartTitle: 'Jenis engagement',
+              engagementChartBody: 'Chart ini memecah bentuk interaksi responden dengan FWD. Dari sini terlihat apakah engagement masih pasif, berbasis konten, atau sudah menuju aplikasi.',
+              credibilityChartTitle: 'Kredibilitas pesan',
+              credibilityChartBody: 'Chart ini menunjukkan seberapa kredibel pesan employer FWD di mata responden. Kredibilitas rendah perlu bukti nyata dan suara karyawan.',
+              recommendChartTitle: 'Intensi rekomendasi',
+              recommendChartBody: 'Chart ini menunjukkan apakah responden bersedia merekomendasikan FWD sebagai employer, sebagai indikator potensi advokasi organik.',
+              barrierTitle: 'Hambatan',
+              barrierBody: 'Bagian ini menyoroti faktor yang menghambat minat melamar dan konten yang dapat meningkatkan ketertarikan.',
+              noBarrierKpiTitle: 'KPI tanpa hambatan',
+              noBarrierKpiBody: 'KPI ini adalah porsi responden yang tidak menyebut hambatan. Nilai lebih tinggi berarti lebih sedikit penghalang dari minat menuju aplikasi.',
+              barriersChartTitle: 'Hambatan teratas',
+              barriersChartBody: 'Chart ini mengidentifikasi alasan responden ragu melamar. Gunakan hambatan teratas untuk memprioritaskan pesan employer brand.',
+              driversChartTitle: 'Pendorong minat teratas',
+              driversChartBody: 'Chart ini menunjukkan hal yang dapat meningkatkan minat melamar, seperti informasi karier, benefit, budaya, atau peluang belajar.',
+            },
+          },
+        },
+      };
+
+      const TOUR_STEPS = [
+        { selector: '.header-left', title: 'headerTitle', body: 'headerBody' },
+        { selector: '.header-meta', title: 'languageTitle', body: 'languageBody' },
+        { selector: '.upload-control', title: 'uploadTitle', body: 'uploadBody' },
+        { selector: '#age-filter', title: 'ageFilterTitle', body: 'ageFilterBody' },
+        { selector: '#university-filter', title: 'universityFilterTitle', body: 'universityFilterBody' },
+        { selector: '#awareness', title: 'awarenessTitle', body: 'awarenessBody' },
+        { selector: '#awareness .kpi-card', title: 'fwdKpiTitle', body: 'fwdKpiBody' },
+        { selector: '#chart-awareness-rank', title: 'awarenessRankTitle', body: 'awarenessRankBody' },
+        { selector: '#chart-awareness-channel', title: 'awarenessChannelTitle', body: 'awarenessChannelBody' },
+        { selector: '#familiarity', title: 'familiarityTitle', body: 'familiarityBody' },
+        { selector: '#chart-familiarity-split', title: 'familiaritySplitTitle', body: 'familiaritySplitBody' },
+        { selector: '#chart-familiarity-aspects', title: 'familiarityAspectsTitle', body: 'familiarityAspectsBody' },
+        { selector: '#perception', title: 'perceptionTitle', body: 'perceptionBody' },
+        { selector: '#chart-perception-dist', title: 'perceptionDistTitle', body: 'perceptionDistBody' },
+        { selector: '#chart-competitiveness', title: 'competitivenessTitle', body: 'competitivenessBody' },
+        { selector: '#consideration', title: 'considerationTitle', body: 'considerationBody' },
+        { selector: '#chart-consideration', title: 'considerationChartTitle', body: 'considerationChartBody' },
+        { selector: '#chart-career-interest', title: 'careerInterestTitle', body: 'careerInterestBody' },
+        { selector: '#advocacy', title: 'advocacyTitle', body: 'advocacyBody' },
+        { selector: '#advocacy .kpi-card:first-child', title: 'engagementKpiTitle', body: 'engagementKpiBody' },
+        { selector: '#advocacy .kpi-card:nth-child(2)', title: 'advocacyKpiTitle', body: 'advocacyKpiBody' },
+        { selector: '#chart-engagement', title: 'engagementChartTitle', body: 'engagementChartBody' },
+        { selector: '#chart-credibility', title: 'credibilityChartTitle', body: 'credibilityChartBody' },
+        { selector: '#chart-recommend', title: 'recommendChartTitle', body: 'recommendChartBody' },
+        { selector: '#barrier', title: 'barrierTitle', body: 'barrierBody' },
+        { selector: '#barrier .kpi-card', title: 'noBarrierKpiTitle', body: 'noBarrierKpiBody' },
+        { selector: '#chart-barriers', title: 'barriersChartTitle', body: 'barriersChartBody' },
+        { selector: '#chart-interest-drivers', title: 'driversChartTitle', body: 'driversChartBody' },
+      ];
+
+      function t(path) {
+        return path.split('.').reduce((obj, part) => obj?.[part], I18N[currentLang]) ?? path;
+      }
+
+      function extractNumber(text, fallback = 0) {
+        const match = String(text || '').match(/\d+(?:\.\d+)?/);
+        return match ? match[0] : fallback;
+      }
+
+      function extractPercent(text, fallback = 0) {
+        const match = String(text || '').match(/(\d+(?:\.\d+)?)%/);
+        return match ? match[1] : extractNumber(text, fallback);
+      }
+
+      function setText(selector, text) {
+        const el = document.querySelector(selector);
+        if (el) el.textContent = text;
+      }
+
+      function setAll(selector, values) {
+        const nodes = document.querySelectorAll(selector);
+        values.forEach((text, index) => {
+          if (nodes[index]) nodes[index].textContent = text;
+        });
+      }
+
+      function sourceLabel(rawSource) {
+        if (!rawSource || rawSource === I18N.en.sourceInitial || rawSource === I18N.id.sourceInitial) {
+          return I18N[currentLang].sourceInitial;
+        }
+        return rawSource;
+      }
+
+      function translateError(text) {
+        const allErrors = Object.entries(I18N.en.errors);
+        const match = allErrors.find(([, value]) => value === text);
+        return match ? I18N[currentLang].errors[match[0]] : text;
+      }
+
+      function ensureControls() {
+        const meta = document.querySelector('.header-meta');
+        if (meta && !meta.querySelector('.lang-toggle')) {
+          const lang = document.createElement('span');
+          lang.className = 'lang-toggle';
+          lang.innerHTML = '<button type="button" data-lang="en">EN</button><button type="button" data-lang="id">ID</button>';
+          meta.appendChild(lang);
+          lang.addEventListener('click', event => {
+            const button = event.target.closest('button[data-lang]');
+            if (!button) return;
+            currentLang = button.dataset.lang;
+            localStorage.setItem(LANG_KEY, currentLang);
+            applyLanguage();
+            if (activeTourIndex >= 0) renderTourStep();
+          });
+        }
+
+        const uploadControl = document.querySelector('.upload-control');
+        if (uploadControl && !document.querySelector('#start-tour')) {
+          const tourButton = document.createElement('button');
+          tourButton.className = 'tour-button';
+          tourButton.id = 'start-tour';
+          tourButton.type = 'button';
+          uploadControl.appendChild(tourButton);
+          tourButton.addEventListener('click', () => startTour(0, false));
+        }
+      }
+
+      function localizeSelectOptions() {
+        const age = document.querySelector('#age-filter option[value="__all__"]');
+        const university = document.querySelector('#university-filter option[value="__all__"]');
+        if (age) age.textContent = I18N[currentLang].allAges;
+        if (university) university.textContent = I18N[currentLang].allUniversities;
+      }
+
+      function applyLanguage() {
+        isApplyingLanguage = true;
+        ensureControls();
+        const copy = I18N[currentLang];
+
+        setText('.header-left .subtitle', copy.subtitle);
+        setText('.survey-label', copy.surveyLabel);
+        setText('.badge-sample', copy.liveData);
+        document.querySelectorAll('.lang-toggle button').forEach(button => button.classList.toggle('active', button.dataset.lang === currentLang));
+
+        const metaText = document.querySelector('.header-meta span:first-child')?.textContent || '';
+        const metaNumbers = metaText.match(/\d+/g) || ['0', '0'];
+        setText('.header-meta span:first-child', copy.respondents(metaNumbers[0], metaNumbers[1] || metaNumbers[0]));
+
+        const status = document.querySelector('#data-status');
+        if (status) {
+          if (status.classList.contains('error')) {
+            status.textContent = translateError(status.textContent);
+          } else {
+            const parts = status.textContent.split('|');
+            const count = extractNumber(parts[1] || status.textContent, 0);
+            status.textContent = copy.status(sourceLabel(parts[0]?.trim()), count);
+          }
+        }
+
+        setText('.upload-control > label:first-child', copy.uploadLabel);
+        setText('.upload-button', copy.uploadButton);
+        setText('#reset-data', copy.resetButton);
+        setText('#start-tour', copy.productTour);
+        setText('label[for="age-filter"]', copy.ageLabel);
+        setText('label[for="university-filter"]', copy.universityLabel);
+        localizeSelectOptions();
+
+        setText('#awareness .section-title', copy.sections.awareness);
+        setText('#familiarity .section-title', copy.sections.familiarity);
+        setText('#perception .section-title', copy.sections.perception);
+        setText('#consideration .section-title', copy.sections.consideration);
+        setText('#advocacy .section-title', copy.sections.advocacy);
+        setText('#barrier .section-title', copy.sections.barrier);
+
+        setText('#awareness .kpi-label', copy.kpi.fwdAwareness);
+        setText('#advocacy .kpi-card:first-child .kpi-label', copy.kpi.engagement);
+        setText('#advocacy .kpi-card:nth-child(2) .kpi-label', copy.kpi.advocacy);
+        setText('#barrier .kpi-label', copy.kpi.noBarrier);
+
+        const currentViewCount = extractNumber(document.querySelector('#awareness .kpi-trend')?.textContent, 0);
+        setText('#awareness .kpi-trend', copy.currentView(currentViewCount));
+        setText('#advocacy .kpi-card:first-child .kpi-trend', copy.currentView(extractNumber(document.querySelector('#advocacy .kpi-card:first-child .kpi-trend')?.textContent, currentViewCount)));
+        setText('#advocacy .kpi-card:nth-child(2) .kpi-trend', copy.currentView(extractNumber(document.querySelector('#advocacy .kpi-card:nth-child(2) .kpi-trend')?.textContent, currentViewCount)));
+        setText('#barrier .kpi-trend', copy.currentView(extractNumber(document.querySelector('#barrier .kpi-trend')?.textContent, currentViewCount)));
+
+        setAll('.chart-title', [
+          copy.chartTitles.awarenessRank,
+          copy.chartTitles.awarenessChannel,
+          copy.chartTitles.familiaritySplit,
+          copy.chartTitles.familiarityAspects,
+          copy.chartTitles.perceptionDist,
+          copy.chartTitles.competitiveness,
+          copy.chartTitles.consideration,
+          copy.chartTitles.careerInterest,
+          copy.chartTitles.engagement,
+          copy.chartTitles.credibility,
+          copy.chartTitles.recommend,
+          copy.chartTitles.barriers,
+          copy.chartTitles.drivers,
+        ]);
+
+        const perceptionPct = extractPercent(document.querySelector('#perception .chart-sub')?.textContent, 0);
+        const considerationPct = extractPercent(document.querySelector('#consideration .chart-sub')?.textContent, 0);
+        const credibilitySub = document.querySelector('#advocacy .q21-block .chart-sub')?.textContent || '';
+        const credibilityNumbers = credibilitySub.match(/\d+(?:\.\d+)?/g) || ['0', 'n/a'];
+        const barrierLabel = (document.querySelector('#barrier .chart-block:first-child .chart-sub')?.textContent || '').split(':').pop()?.trim() || 'No data';
+
+        setAll('.chart-sub', [
+          copy.chartSubs.awarenessRank,
+          copy.chartSubs.awarenessChannel,
+          copy.chartSubs.familiaritySplit,
+          copy.chartSubs.familiarityAspects,
+          copy.chartSubs.perception(perceptionPct),
+          copy.chartSubs.competitiveness,
+          copy.chartSubs.consideration(considerationPct),
+          copy.chartSubs.careerInterest,
+          copy.chartSubs.credibility(credibilityNumbers[0], credibilityNumbers[1] || 'n/a'),
+          copy.chartSubs.barriers(barrierLabel),
+          copy.chartSubs.drivers,
+        ]);
+        setText('#barrier .chart-block:first-child .chart-sub', copy.chartSubs.barriers(barrierLabel));
+
+        const annotationTexts = document.querySelectorAll('#perception .chart-annotation');
+        if (annotationTexts[0]) annotationTexts[0].textContent = copy.annotations.perception(perceptionPct);
+        if (annotationTexts[1]) annotationTexts[1].textContent = copy.annotations.competitiveness(extractNumber(annotationTexts[1].textContent, 'n/a'));
+
+        setText('#awareness .section-insight', copy.insights.awareness);
+        setText('#familiarity .section-insight', copy.insights.familiarity);
+        setText('#perception .section-insight', copy.insights.perception);
+        setText('#consideration .section-insight', copy.insights.consideration);
+        setText('#advocacy .section-insight', copy.insights.advocacy);
+        setText('#barrier .section-insight', copy.insights.barrier);
+
+        requestAnimationFrame(() => { isApplyingLanguage = false; });
+      }
+
+      function ensureTourDom() {
+        if (document.querySelector('.tour-spotlight')) return;
+        const spotlight = document.createElement('div');
+        spotlight.className = 'tour-spotlight';
+        const tooltip = document.createElement('div');
+        tooltip.className = 'tour-tooltip';
+        tooltip.innerHTML = `
+          <div class="tour-progress"></div>
+          <div class="tour-title"></div>
+          <div class="tour-body"></div>
+          <div class="tour-actions">
+            <button type="button" class="tour-skip" data-tour="skip"></button>
+            <button type="button" data-tour="back"></button>
+            <button type="button" class="tour-primary" data-tour="next"></button>
+          </div>
+        `;
+        document.body.appendChild(spotlight);
+        document.body.appendChild(tooltip);
+        tooltip.addEventListener('click', event => {
+          const action = event.target.closest('button[data-tour]')?.dataset.tour;
+          if (action === 'skip') endTour();
+          if (action === 'back') showTourStep(activeTourIndex - 1);
+          if (action === 'next') {
+            if (activeTourIndex >= TOUR_STEPS.length - 1) endTour();
+            else showTourStep(activeTourIndex + 1);
+          }
+        });
+      }
+
+      function startTour(index = 0, auto = false) {
+        if (auto && localStorage.getItem(TOUR_KEY)) return;
+        ensureTourDom();
+        showTourStep(index);
+      }
+
+      function endTour() {
+        activeTourIndex = -1;
+        localStorage.setItem(TOUR_KEY, '1');
+        document.querySelector('.tour-spotlight')?.remove();
+        document.querySelector('.tour-tooltip')?.remove();
+      }
+
+      function showTourStep(index) {
+        activeTourIndex = Math.max(0, Math.min(index, TOUR_STEPS.length - 1));
+        renderTourStep();
+      }
+
+      function renderTourStep() {
+        if (activeTourIndex < 0) return;
+        ensureTourDom();
+        const step = TOUR_STEPS[activeTourIndex];
+        const target = document.querySelector(step.selector);
+        if (!target) {
+          if (activeTourIndex < TOUR_STEPS.length - 1) showTourStep(activeTourIndex + 1);
+          else endTour();
+          return;
+        }
+        target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+        setTimeout(() => positionTour(target, step), 180);
+      }
+
+      function positionTour(target, step) {
+        const rect = target.getBoundingClientRect();
+        const pad = 8;
+        const spotlight = document.querySelector('.tour-spotlight');
+        const tooltip = document.querySelector('.tour-tooltip');
+        if (!spotlight || !tooltip) return;
+
+        spotlight.style.left = `${Math.max(8, rect.left - pad)}px`;
+        spotlight.style.top = `${Math.max(8, rect.top - pad)}px`;
+        spotlight.style.width = `${Math.min(window.innerWidth - 16, rect.width + (pad * 2))}px`;
+        spotlight.style.height = `${Math.min(window.innerHeight - 16, rect.height + (pad * 2))}px`;
+
+        const copy = I18N[currentLang].tour;
+        tooltip.querySelector('.tour-progress').textContent = copy.progress(activeTourIndex + 1, TOUR_STEPS.length);
+        tooltip.querySelector('.tour-title').textContent = copy.steps[step.title];
+        tooltip.querySelector('.tour-body').textContent = copy.steps[step.body];
+        tooltip.querySelector('[data-tour="skip"]').textContent = copy.skip;
+        tooltip.querySelector('[data-tour="back"]').textContent = copy.back;
+        tooltip.querySelector('[data-tour="back"]').disabled = activeTourIndex === 0;
+        tooltip.querySelector('[data-tour="next"]').textContent = activeTourIndex === TOUR_STEPS.length - 1 ? copy.finish : copy.next;
+
+        const tooltipRect = tooltip.getBoundingClientRect();
+        let left = rect.right + 16;
+        let top = rect.top;
+        if (left + tooltipRect.width > window.innerWidth - 16) left = rect.left - tooltipRect.width - 16;
+        if (left < 16) left = Math.min(16, window.innerWidth - tooltipRect.width - 16);
+        if (top + tooltipRect.height > window.innerHeight - 16) top = window.innerHeight - tooltipRect.height - 16;
+        if (top < 16) top = 16;
+        tooltip.style.left = `${left}px`;
+        tooltip.style.top = `${top}px`;
+      }
+
+      const observer = new MutationObserver(() => {
+        if (isApplyingLanguage) return;
+        clearTimeout(observerTimer);
+        observerTimer = setTimeout(applyLanguage, 30);
+      });
+      observer.observe(document.querySelector('#dashboard'), { childList: true, subtree: true, characterData: true });
+
+      window.addEventListener('resize', () => {
+        if (activeTourIndex >= 0) renderTourStep();
+      });
+
+      setTimeout(() => {
+        applyLanguage();
+        startTour(0, true);
+      }, 250);
     })();
   </script>
 </body>
