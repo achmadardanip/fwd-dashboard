@@ -902,6 +902,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="dashboard" id="dashboard">
@@ -1587,44 +1588,17 @@
       const AGE_ORDER = ['Under 18', '18 - 20', '21 - 23', '24 - 26'];
       const LIKERT = ['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree'];
       const FILTER_ALL = '__all__';
-      const SAVED_DATA_KEY = 'ebtUploadedSurveyRowsV1';
+      const SUPABASE_URL = 'https://dfmjcwljkcuaeftnxebg.supabase.co';
+      const SUPABASE_KEY = 'sb_publishable_dwqIMtql8xc07SPsVRilNw_Xj4vqs_Q';
+      const SUPABASE_TABLE = 'survey_dashboard_state';
+      const SUPABASE_RECORD_ID = 'latest';
       const INITIAL_SOURCE_NAME = 'Initial survey data';
+      const supabaseClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_KEY, {
+        auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+      });
 
-      function loadSavedDataset() {
-        try {
-          const raw = localStorage.getItem(SAVED_DATA_KEY);
-          if (!raw) return null;
-          const payload = JSON.parse(raw);
-          const rows = Array.isArray(payload?.rows) ? payload.rows.map(normalizeRow) : [];
-          if (!rows.some(row => row.consent.toLowerCase() === 'yes')) throw new Error('Saved survey data is invalid.');
-          return { rows, sourceName: clean(payload.sourceName) || 'Uploaded survey data' };
-        } catch (error) {
-          try { localStorage.removeItem(SAVED_DATA_KEY); } catch (_) {}
-          return null;
-        }
-      }
-
-      function saveDataset(rows, name) {
-        try {
-          localStorage.setItem(SAVED_DATA_KEY, JSON.stringify({
-            version: 1,
-            sourceName: clean(name) || 'Uploaded survey data',
-            savedAt: new Date().toISOString(),
-            rows,
-          }));
-          return true;
-        } catch (error) {
-          return false;
-        }
-      }
-
-      function clearSavedDataset() {
-        try { localStorage.removeItem(SAVED_DATA_KEY); } catch (_) {}
-      }
-
-      const savedDataset = loadSavedDataset();
-      let activeRows = savedDataset?.rows || INITIAL_SURVEY_ROWS.map(normalizeRow);
-      let sourceName = savedDataset?.sourceName || INITIAL_SOURCE_NAME;
+      let activeRows = INITIAL_SURVEY_ROWS.map(normalizeRow);
+      let sourceName = INITIAL_SOURCE_NAME;
 
       const filterBar = document.querySelector('.filter-bar');
       filterBar.innerHTML = `
@@ -1875,8 +1849,68 @@
       }
 
       function updateStatus(rows, errorText = '') {
+        delete els.status.dataset.transient;
         els.status.classList.toggle('error', Boolean(errorText));
         els.status.textContent = errorText || `${sourceName} | ${rows.length} valid respondents shown`;
+      }
+
+      function supabaseErrorMessage(error, fallback) {
+        return error?.message ? `${fallback}: ${error.message}` : fallback;
+      }
+
+      async function loadSharedDataset() {
+        if (!supabaseClient) throw new Error('Supabase connection unavailable. Check the CDN and project settings.');
+        const { data, error } = await supabaseClient
+          .from(SUPABASE_TABLE)
+          .select('source_name, rows, updated_at')
+          .eq('id', SUPABASE_RECORD_ID)
+          .maybeSingle();
+        if (error) throw error;
+        if (!data?.rows) return false;
+        const rows = Array.isArray(data.rows) ? data.rows.map(normalizeRow) : [];
+        if (!rows.some(row => row.consent.toLowerCase() === 'yes')) throw new Error('Saved Supabase survey data is invalid.');
+        activeRows = rows;
+        sourceName = clean(data.source_name) || 'Uploaded survey data';
+        return true;
+      }
+
+      async function saveSharedDataset(rows, name) {
+        if (!supabaseClient) throw new Error('Supabase connection unavailable. Check the CDN and project settings.');
+        const payload = {
+          id: SUPABASE_RECORD_ID,
+          source_name: clean(name) || 'Uploaded survey data',
+          rows,
+          updated_at: new Date().toISOString(),
+        };
+        const { error } = await supabaseClient
+          .from(SUPABASE_TABLE)
+          .upsert(payload, { onConflict: 'id' });
+        if (error) throw error;
+      }
+
+      async function initializeDashboard() {
+        renderFilters();
+        renderDashboard();
+        if (!supabaseClient) {
+          updateStatus(currentRows(), 'Supabase connection unavailable. Check the CDN and project settings.');
+          return;
+        }
+        els.status.classList.remove('error');
+        els.status.dataset.transient = 'true';
+        els.status.textContent = 'Loading latest shared survey data...';
+        try {
+          const loaded = await loadSharedDataset();
+          if (loaded) {
+            renderFilters();
+            renderDashboard();
+          } else {
+            updateStatus(currentRows());
+          }
+        } catch (error) {
+          renderFilters();
+          renderDashboard();
+          updateStatus(currentRows(), supabaseErrorMessage(error, 'Could not load latest Supabase survey data'));
+        }
       }
 
       function renderDashboard() {
@@ -2058,21 +2092,23 @@
           return;
         }
         const reader = new FileReader();
-        reader.onload = event => {
+        reader.onload = async event => {
           try {
             const workbook = XLSX.read(event.target.result, { type: 'array' });
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
             const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
             const parsed = parseWorkbookRows(rows);
             if (!parsed.some(row => row.consent.toLowerCase() === 'yes')) throw new Error('No consented responses found.');
+            els.status.classList.remove('error');
+            els.status.dataset.transient = 'true';
+            els.status.textContent = 'Saving latest survey data to Supabase...';
+            await saveSharedDataset(parsed, file.name);
             activeRows = parsed;
             sourceName = file.name;
-            const saved = saveDataset(parsed, file.name);
             renderFilters();
             renderDashboard();
-            if (!saved) updateStatus(currentRows(), 'Uploaded data loaded, but could not be saved in this browser.');
           } catch (error) {
-            updateStatus(currentRows(), error.message || 'Could not read this survey file.');
+            updateStatus(currentRows(), error.message || 'Could not save this survey to Supabase.');
           } finally {
             els.upload.value = '';
           }
@@ -2084,16 +2120,23 @@
       els.age.addEventListener('change', renderDashboard);
       els.university.addEventListener('change', renderDashboard);
       els.upload.addEventListener('change', event => loadUploadedFile(event.target.files[0]));
-      els.reset.addEventListener('click', () => {
-        activeRows = INITIAL_SURVEY_ROWS.map(normalizeRow);
-        sourceName = INITIAL_SOURCE_NAME;
-        clearSavedDataset();
-        renderFilters();
-        renderDashboard();
+      els.reset.addEventListener('click', async () => {
+        const initialRows = INITIAL_SURVEY_ROWS.map(normalizeRow);
+        els.status.classList.remove('error');
+        els.status.dataset.transient = 'true';
+        els.status.textContent = 'Resetting shared survey data...';
+        try {
+          await saveSharedDataset(initialRows, INITIAL_SOURCE_NAME);
+          activeRows = initialRows;
+          sourceName = INITIAL_SOURCE_NAME;
+          renderFilters();
+          renderDashboard();
+        } catch (error) {
+          updateStatus(currentRows(), supabaseErrorMessage(error, 'Could not reset the shared Supabase survey data'));
+        }
       });
 
-      renderFilters();
-      renderDashboard();
+      initializeDashboard();
     })();
   </script>
   <script>
@@ -2130,6 +2173,10 @@
             structure: 'Excel structure does not match the survey export.',
             generic: 'Could not read this survey file.',
             persist: 'Uploaded data loaded, but could not be saved in this browser.',
+            supabaseUnavailable: 'Supabase connection unavailable. Check the CDN and project settings.',
+            supabaseLoad: 'Could not load latest Supabase survey data.',
+            supabaseSave: 'Could not save this survey to Supabase.',
+            supabaseReset: 'Could not reset the shared Supabase survey data.',
           },
           sections: {
             awareness: 'Awareness',
@@ -2197,7 +2244,7 @@
               languageTitle: 'Language toggle',
               languageBody: 'Switch between English and Indonesia. The dashboard labels and this product tour update immediately.',
               uploadTitle: 'Upload survey data',
-              uploadBody: 'Upload an Excel or CSV survey export. The dashboard processes and remembers the latest valid file in this browser, while keeping the previous view if the file is invalid.',
+              uploadBody: 'Upload an Excel or CSV survey export. The dashboard saves the latest valid file to Supabase so every user sees the same persisted dataset.',
               ageFilterTitle: 'Age filter',
               ageFilterBody: 'Use this dropdown to compare employer brand metrics across age bands. All charts and KPIs refresh to the selected segment.',
               universityFilterTitle: 'University filter',
@@ -2275,6 +2322,10 @@
             structure: 'Struktur Excel tidak sesuai dengan export survei.',
             generic: 'File survei ini tidak dapat dibaca.',
             persist: 'Data upload berhasil dimuat, tetapi tidak dapat disimpan di browser ini.',
+            supabaseUnavailable: 'Koneksi Supabase tidak tersedia. Periksa CDN dan pengaturan project.',
+            supabaseLoad: 'Data survei terbaru dari Supabase tidak dapat dimuat.',
+            supabaseSave: 'File survei ini tidak dapat disimpan ke Supabase.',
+            supabaseReset: 'Data survei bersama di Supabase tidak dapat direset.',
           },
           sections: {
             awareness: 'Kesadaran',
@@ -2342,7 +2393,7 @@
               languageTitle: 'Pengubah bahasa',
               languageBody: 'Ganti antara English dan Indonesia. Label dashboard dan tur produk ini akan langsung mengikuti bahasa aktif.',
               uploadTitle: 'Unggah data survei',
-              uploadBody: 'Unggah export survei Excel atau CSV. Dashboard memproses dan mengingat file valid terbaru di browser ini, serta mempertahankan tampilan terakhir jika file tidak valid.',
+              uploadBody: 'Unggah export survei Excel atau CSV. Dashboard menyimpan file valid terbaru ke Supabase agar semua user melihat dataset yang sama dan tetap tersimpan.',
               ageFilterTitle: 'Filter usia',
               ageFilterBody: 'Gunakan dropdown ini untuk membandingkan metrik employer brand antar kelompok usia. Semua chart dan KPI mengikuti segmen yang dipilih.',
               universityFilterTitle: 'Filter universitas',
@@ -2464,8 +2515,10 @@
 
       function translateError(text) {
         const allErrors = Object.entries(I18N.en.errors);
-        const match = allErrors.find(([, value]) => value === text);
-        return match ? I18N[currentLang].errors[match[0]] : text;
+        const match = allErrors.find(([, value]) => value === text || String(text).startsWith(`${value}:`));
+        if (!match) return text;
+        const [, value] = match;
+        return `${I18N[currentLang].errors[match[0]]}${String(text).slice(value.length)}`;
       }
 
       function ensureControls() {
@@ -2519,7 +2572,9 @@
 
         const status = document.querySelector('#data-status');
         if (status) {
-          if (status.classList.contains('error')) {
+          if (status.dataset.transient === 'true') {
+            // Keep in-flight Supabase loading/saving copy stable until the async action finishes.
+          } else if (status.classList.contains('error')) {
             status.textContent = translateError(status.textContent);
           } else {
             const parts = status.textContent.split('|');
