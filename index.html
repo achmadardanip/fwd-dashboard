@@ -1858,6 +1858,15 @@
         return error?.message ? `${fallback}: ${error.message}` : fallback;
       }
 
+      function isMissingSupabaseTable(error) {
+        const message = String(error?.message || '');
+        return error?.code === '42P01' || message.includes(`'public.${SUPABASE_TABLE}'`) || message.includes('schema cache');
+      }
+
+      function supabaseSetupMessage() {
+        return `Supabase table "${SUPABASE_TABLE}" is not set up yet. Run supabase_schema.sql in Supabase SQL Editor.`;
+      }
+
       async function loadSharedDataset() {
         if (!supabaseClient) throw new Error('Supabase connection unavailable. Check the CDN and project settings.');
         const { data, error } = await supabaseClient
@@ -1909,6 +1918,10 @@
         } catch (error) {
           renderFilters();
           renderDashboard();
+          if (isMissingSupabaseTable(error)) {
+            updateStatus(currentRows());
+            return;
+          }
           updateStatus(currentRows(), supabaseErrorMessage(error, 'Could not load latest Supabase survey data'));
         }
       }
@@ -2108,7 +2121,7 @@
             renderFilters();
             renderDashboard();
           } catch (error) {
-            updateStatus(currentRows(), error.message || 'Could not save this survey to Supabase.');
+            updateStatus(currentRows(), isMissingSupabaseTable(error) ? supabaseSetupMessage() : (error.message || 'Could not save this survey to Supabase.'));
           } finally {
             els.upload.value = '';
           }
@@ -2132,7 +2145,7 @@
           renderFilters();
           renderDashboard();
         } catch (error) {
-          updateStatus(currentRows(), supabaseErrorMessage(error, 'Could not reset the shared Supabase survey data'));
+          updateStatus(currentRows(), isMissingSupabaseTable(error) ? supabaseSetupMessage() : supabaseErrorMessage(error, 'Could not reset the shared Supabase survey data'));
         }
       });
 
