@@ -2133,20 +2133,10 @@
       els.age.addEventListener('change', renderDashboard);
       els.university.addEventListener('change', renderDashboard);
       els.upload.addEventListener('change', event => loadUploadedFile(event.target.files[0]));
-      els.reset.addEventListener('click', async () => {
-        const initialRows = INITIAL_SURVEY_ROWS.map(normalizeRow);
-        els.status.classList.remove('error');
-        els.status.dataset.transient = 'true';
-        els.status.textContent = 'Resetting shared survey data...';
-        try {
-          await saveSharedDataset(initialRows, INITIAL_SOURCE_NAME);
-          activeRows = initialRows;
-          sourceName = INITIAL_SOURCE_NAME;
-          renderFilters();
-          renderDashboard();
-        } catch (error) {
-          updateStatus(currentRows(), isMissingSupabaseTable(error) ? supabaseSetupMessage() : supabaseErrorMessage(error, 'Could not reset the shared Supabase survey data'));
-        }
+      els.reset.addEventListener('click', () => {
+        els.age.value = FILTER_ALL;
+        els.university.value = FILTER_ALL;
+        renderDashboard();
       });
 
       initializeDashboard();
@@ -2189,7 +2179,6 @@
             supabaseUnavailable: 'Supabase connection unavailable. Check the CDN and project settings.',
             supabaseLoad: 'Could not load latest Supabase survey data.',
             supabaseSave: 'Could not save this survey to Supabase.',
-            supabaseReset: 'Could not reset the shared Supabase survey data.',
           },
           sections: {
             awareness: 'Awareness',
@@ -2338,7 +2327,6 @@
             supabaseUnavailable: 'Koneksi Supabase tidak tersedia. Periksa CDN dan pengaturan project.',
             supabaseLoad: 'Data survei terbaru dari Supabase tidak dapat dimuat.',
             supabaseSave: 'File survei ini tidak dapat disimpan ke Supabase.',
-            supabaseReset: 'Data survei bersama di Supabase tidak dapat direset.',
           },
           sections: {
             awareness: 'Kesadaran',
